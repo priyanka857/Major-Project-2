@@ -1,3 +1,4 @@
+// src/pages/Home.jsx
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Container,
@@ -13,7 +14,11 @@ import Loader from "../components/Loader";
 import Message from "../components/Message";
 import PostForm from "../Posts/PostForm";
 
-const BACKEND_URL =process.env.REACT_APP_API_BASE;
+const BACKEND_URL = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
+
+// Helper function to safely prepend backend URL
+const getImageUrl = (path) =>
+  path ? `${BACKEND_URL}/${path.replace(/^\/+/, "")}` : "/default.png";
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -128,7 +133,7 @@ const Home = () => {
                 <Card.Header className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center gap-3">
                     <img
-                      src={post.user.profilePicture || "/default.png"}
+                      src={getImageUrl(post.user.profilePicture)}
                       alt="profile"
                       className="rounded-circle object-cover"
                       width={40}
@@ -151,7 +156,7 @@ const Home = () => {
                 {post.image && (
                   <Card.Img
                     variant="top"
-                    src={`${BACKEND_URL}/${post.image}`}
+                    src={getImageUrl(post.image)}
                     className="rounded-0"
                     style={{
                       width: "100%",
@@ -173,7 +178,7 @@ const Home = () => {
                     {post.comments.map((comment, idx) => (
                       <li key={idx} className="mb-2 d-flex align-items-start gap-2">
                         <img
-                          src={comment.user.profilePicture || "/default.png"}
+                          src={getImageUrl(comment.user.profilePicture)}
                           alt=""
                           width={30}
                           height={30}
@@ -209,7 +214,7 @@ const Home = () => {
         </Col>
       </Row>
 
-      {/* 🔴 Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       <Modal show={showModal} onHide={closeDeleteModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>

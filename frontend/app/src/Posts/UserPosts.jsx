@@ -7,6 +7,8 @@ import Message from "../components/Message";
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
 
+console.log("BACKEND_URL:", process.env.REACT_APP_API_BASE);
+
 // Helper to safely get full backend image URL
 const getImageUrl = (path) => (path ? `${BACKEND_URL}/${path.replace(/^\/+/, "")}` : "/default.png");
 
