@@ -5,7 +5,10 @@ import { Card, Button, Form, Row, Col, Image } from "react-bootstrap";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
-const BACKEND_URL = process.env.REACT_APP_API_BASE;
+const BACKEND_URL = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
+
+// Helper to safely get full backend image URL
+const getImageUrl = (path) => (path ? `${BACKEND_URL}/${path.replace(/^\/+/, "")}` : "/default.png");
 
 const UserPosts = ({ userId, showActions = true }) => {
   const [posts, setPosts] = useState([]);
@@ -74,10 +77,9 @@ const UserPosts = ({ userId, showActions = true }) => {
 
   if (loading) return <Loader />;
   if (error) return <Message variant="danger">{error}</Message>;
-  if (!posts.length)
-    return <p className="text-center text-muted">No posts yet.</p>;
+  if (!posts.length) return <p className="text-center text-muted">No posts yet.</p>;
 
-  // 👉 Profile-style Grid layout if showActions is false
+  // Profile-style Grid layout (e.g., user profile page)
   if (!showActions) {
     return (
       <Row className="g-2 mt-3">
@@ -85,7 +87,7 @@ const UserPosts = ({ userId, showActions = true }) => {
           <Col key={post._id} xs={12} sm={6} md={4}>
             <div className="border rounded overflow-hidden">
               <Image
-                src={post.image ? `${BACKEND_URL}/${post.image}` : "/default.png"}
+                src={getImageUrl(post.image)}
                 alt="Post"
                 className="w-100"
                 style={{ aspectRatio: "1/1", objectFit: "cover" }}
@@ -97,7 +99,7 @@ const UserPosts = ({ userId, showActions = true }) => {
     );
   }
 
-  // 👉 Normal full post display (Home page style)
+  // Normal full post display (Home page style)
   return (
     <>
       {message && (
@@ -110,7 +112,7 @@ const UserPosts = ({ userId, showActions = true }) => {
           <Card.Header className="d-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center gap-3">
               <img
-                src={post.user.profilePicture ? `${BACKEND_URL}${post.user.profilePicture}` : "/default.png"}
+                src={getImageUrl(post.user.profilePicture)}
                 alt="profile"
                 className="rounded-circle"
                 width={40}
@@ -132,7 +134,7 @@ const UserPosts = ({ userId, showActions = true }) => {
           {post.image && (
             <Card.Img
               variant="top"
-              src={`${BACKEND_URL}/${post.image}`}
+              src={getImageUrl(post.image)}
               style={{
                 width: "100%",
                 objectFit: "contain",
@@ -153,7 +155,7 @@ const UserPosts = ({ userId, showActions = true }) => {
               {post.comments.map((comment, idx) => (
                 <li key={idx} className="mb-2 d-flex align-items-start gap-2">
                   <img
-                    src={comment.user.profilePicture ? `${BACKEND_URL}${comment.user.profilePicture}` : "/default.png"}
+                    src={getImageUrl(comment.user.profilePicture)}
                     alt=""
                     width={30}
                     height={30}
