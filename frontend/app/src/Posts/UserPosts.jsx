@@ -5,7 +5,7 @@ import { Card, Button, Form, Row, Col, Image } from "react-bootstrap";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
-const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+const BACKEND_URL = process.env.REACT_APP_API_BASE;
 
 const UserPosts = ({ userId, showActions = true }) => {
   const [posts, setPosts] = useState([]);

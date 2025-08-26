@@ -6,8 +6,7 @@ import Loader from "../components/Loader";
 import Message from "../components/Message";
 import UserPosts from "../Posts/UserPosts";
 
-const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
-
+const BACKEND_URL = process.env.REACT_APP_API_BASE;
 function Profile() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);

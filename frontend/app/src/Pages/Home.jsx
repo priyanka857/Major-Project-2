@@ -13,7 +13,7 @@ import Loader from "../components/Loader";
 import Message from "../components/Message";
 import PostForm from "../Posts/PostForm";
 
-const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+const BACKEND_URL =process.env.REACT_APP_API_BASE;
 
 const Home = () => {
   const [posts, setPosts] = useState([]);

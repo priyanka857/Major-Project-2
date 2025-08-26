@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Form, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
 
-const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+const BACKEND_URL = process.env.REACT_APP_API_BASE;
 
 const PostForm = ({ onPostCreated }) => {
   const [content, setContent] = useState("");

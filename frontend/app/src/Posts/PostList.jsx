@@ -4,7 +4,7 @@ import axios from "axios";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
-const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+const BACKEND_URL = process.env.REACT_APP_API_BASE;
 
 const PostList = () => {
   const [posts, setPosts] = useState([]);

@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Container, Card, Image, Spinner, Button } from "react-bootstrap";
 
-const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+const BACKEND_URL = process.env.REACT_APP_API_BASE;
 
 const UserProfile = () => {
   const { username } = useParams();
