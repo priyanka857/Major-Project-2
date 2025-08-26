@@ -18,7 +18,7 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://yourfrontend.onrender.com"],
+    origin: ['http://localhost:3000', 'https://socialmedia-frontend-jkwq.onrender.com'],
     credentials: true,
   })
 );
@@ -38,7 +38,7 @@ app.get("/", (req, res) => res.send("API is running"));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "https://yourfrontend.onrender.com"],
+    origin: ['http://localhost:3000', 'https://socialmedia-frontend-jkwq.onrender.com'],
     methods: ["GET", "POST"],
     credentials: true,
   },
