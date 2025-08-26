@@ -12,6 +12,9 @@ import axios from "axios";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
 
+// Use Render backend URL instead of localhost
+const API_BASE = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
+
 const ChatList = () => {
   const [chats, setChats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +31,7 @@ const ChatList = () => {
     const fetchChats = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get("http://localhost:5000/api/chats", {
+        const { data } = await axios.get(`${API_BASE}/api/chats`, {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
           },
@@ -66,7 +69,7 @@ const ChatList = () => {
       }
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/api/users/search-users?query=${searchTerm}`,
+          `${API_BASE}/api/users/search-users?query=${searchTerm}`,
           {
             headers: {
               Authorization: `Bearer ${userInfo.token}`,
@@ -85,28 +88,26 @@ const ChatList = () => {
 
   // Start or access a chat
   const accessChat = async (userId) => {
-  try {
-    const { data: chat } = await axios.post(
-      "http://localhost:5000/api/chats",
-      { userId },
-      {
-        headers: {
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      }
-    );
-    navigate(`/chat/${chat._id}`, { state: { selectedChat: chat } });
-  } catch (err) {
-    console.error("Chat access failed:", err);
-  }
-};
-
+    try {
+      const { data: chat } = await axios.post(
+        `${API_BASE}/api/chats`,
+        { userId },
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
+      navigate(`/chat/${chat._id}`, { state: { selectedChat: chat } });
+    } catch (err) {
+      console.error("Chat access failed:", err);
+    }
+  };
 
   // Open existing chat
   const handleChatClick = (chatId) => {
-  navigate(`/chat/${chatId}`);
-};
-
+    navigate(`/chat/${chatId}`);
+  };
 
   return (
     <Container className="py-4">

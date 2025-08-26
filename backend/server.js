@@ -1,25 +1,28 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
 const path = require("path");
-const http = require('http');
-const { Server } = require('socket.io');
+const http = require("http");
+const { Server } = require("socket.io");
 
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
-const chatRoutes = require('./routes/chatRoutes');
-
-
-
+const chatRoutes = require("./routes/chatRoutes");
 
 dotenv.config();
 const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://yourfrontend.onrender.com"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
@@ -27,7 +30,7 @@ app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
-app.use('/api/chats', chatRoutes);
+app.use("/api/chats", chatRoutes);
 
 app.get("/", (req, res) => res.send("API is running"));
 
@@ -35,11 +38,12 @@ app.get("/", (req, res) => res.send("API is running"));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://yourfrontend.onrender.com"],
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
+
 
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);

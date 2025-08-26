@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Form,
-  Image,
-} from "react-bootstrap";
+import { Container, Row, Col, Button, Form, Image } from "react-bootstrap";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 import UserPosts from "../Posts/UserPosts";
+
+const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
 
 function Profile() {
   const navigate = useNavigate();
@@ -57,7 +52,7 @@ function Profile() {
         };
 
         const { data } = await axios.get(
-          "http://localhost:5000/api/users/profile",
+          `${BACKEND_URL}/api/users/profile`,
           config
         );
         setUser(data);
@@ -70,8 +65,8 @@ function Profile() {
         );
 
         const [followersRes, followingRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/users/followers", config),
-          axios.get("http://localhost:5000/api/users/following", config),
+          axios.get(`${BACKEND_URL}/api/users/followers`, config),
+          axios.get(`${BACKEND_URL}/api/users/following`, config),
         ]);
 
         setFollowers(followersRes.data);
@@ -104,7 +99,7 @@ function Profile() {
       try {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const { data } = await axios.get(
-          `http://localhost:5000/api/users/search-users?query=${search}`,
+          `${BACKEND_URL}/api/users/search-users?query=${search}`,
           {
             headers: {
               Authorization: `Bearer ${userInfo?.token}`,
@@ -147,11 +142,7 @@ function Profile() {
 
     try {
       if (user.twoFactorAuth) {
-        await axios.post(
-          "http://localhost:5000/api/auth/2fa/disable",
-          {},
-          config
-        );
+        await axios.post(`${BACKEND_URL}/api/auth/2fa/disable`, {}, config);
         setUser((prev) => ({ ...prev, twoFactorAuth: false }));
         localStorage.setItem(
           "userInfo",
@@ -161,7 +152,7 @@ function Profile() {
         setSuccess("2FA disabled successfully.");
       } else {
         const { data } = await axios.post(
-          "http://localhost:5000/api/auth/2fa/enable",
+          `${BACKEND_URL}/api/auth/2fa/enable`,
           {},
           config
         );
@@ -198,7 +189,7 @@ function Profile() {
       };
 
       const { data } = await axios.post(
-        "http://localhost:5000/api/users/upload-profile-picture",
+        `${BACKEND_URL}/api/users/upload-profile-picture`,
         formData,
         config
       );
@@ -223,7 +214,7 @@ function Profile() {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
       await axios.put(
-        "http://localhost:5000/api/users/profile",
+        `${BACKEND_URL}/api/users/profile`,
         { username, email },
         config
       );
@@ -250,8 +241,8 @@ function Profile() {
       const isFollowing = followMap[targetId];
 
       const endpoint = isFollowing
-        ? `http://localhost:5000/api/users/${targetId}/unfollow`
-        : `http://localhost:5000/api/users/${targetId}/follow`;
+        ? `${BACKEND_URL}/api/users/${targetId}/unfollow`
+        : `${BACKEND_URL}/api/users/${targetId}/follow`;
 
       await axios.post(endpoint, {}, config);
 
@@ -278,229 +269,198 @@ function Profile() {
 
   if (loading || !user) return <Loader />;
 
-  // ...all imports and state logic same as before
+  return (
+    <Container fluid className="mt-4">
+      {error && (
+        <Message variant="danger" onClose={() => setError("")} dismissible>
+          {error}
+        </Message>
+      )}
+      {success && (
+        <Message variant="success" onClose={() => setSuccess("")} dismissible>
+          {success}
+        </Message>
+      )}
 
-return (
-  <Container fluid className="mt-4">
-    {error && (
-      <Message variant="danger" onClose={() => setError("")} dismissible>
-        {error}
-      </Message>
-    )}
-    {success && (
-      <Message variant="success" onClose={() => setSuccess("")} dismissible>
-        {success}
-      </Message>
-    )}
-
-    <Row className="gap-3">
-      {/* LEFT PANEL: Profile Overview */}
-      <Col md={4} className="bg-white rounded-4 shadow-sm p-4">
-        <div className="text-center mb-3">
-          <div
-            className="cursor-pointer"
-            onClick={() => document.getElementById("profileUpload").click()}
-          >
-            <Image
-              src={
-                user.profilePicture
-                  ? `http://localhost:5000${user.profilePicture}`
-                  : "https://placehold.co/120x120?text=User"
-              }
-              roundedCircle
-              width={120}
-              height={120}
-              className="border"
-              style={{ objectFit: "cover" }}
-            />
-          </div>
-          <Form.Control
-            type="file"
-            id="profileUpload"
-            style={{ display: "none" }}
-            onChange={(e) =>
-              e.target.files.length > 0 && setProfilePic(e.target.files[0])
-            }
-          />
-          <h5 className="mt-3">
-            <i className="fas fa-user-circle me-2 text-primary"></i>
-            {user.username}
-          </h5>
-          <p className="text-muted">
-            <i className="fas fa-envelope me-2"></i>
-            {user.email}
-          </p>
-
-          {profilePic && (
-            <Button
-              variant="primary"
-              className="mt-2"
-              onClick={uploadProfile}
-              disabled={uploading}
+      <Row className="gap-3">
+        {/* LEFT PANEL: Profile Overview */}
+        <Col md={4} className="bg-white rounded-4 shadow-sm p-4">
+          <div className="text-center mb-3">
+            <div
+              className="cursor-pointer"
+              onClick={() => document.getElementById("profileUpload").click()}
             >
-              <i className="fas fa-upload me-2"></i>
-              {uploading ? "Uploading..." : "Upload Image"}
-            </Button>
-          )}
-        </div>
-
-        <Form>
-          <Form.Group className="mb-3">
-            <Form.Label>
-              <i className="fas fa-user-edit me-2"></i>Edit Username
-            </Form.Label>
+              <Image
+                src={
+                  user.profilePicture
+                    ? `${BACKEND_URL}${user.profilePicture}` // localhost replace with BACKEND_URL
+                    : "https://placehold.co/120x120?text=User"
+                }
+                roundedCircle
+                width={120}
+                height={120}
+                className="border"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
             <Form.Control
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="file"
+              id="profileUpload"
+              style={{ display: "none" }}
+              onChange={(e) =>
+                e.target.files.length > 0 && setProfilePic(e.target.files[0])
+              }
             />
-          </Form.Group>
+            <h5 className="mt-3">
+              <i className="fas fa-user-circle me-2 text-primary"></i>
+              {user.username}
+            </h5>
+            <p className="text-muted">
+              <i className="fas fa-envelope me-2"></i>
+              {user.email}
+            </p>
 
-          <Button
-            variant="success"
-            className="w-100"
-            onClick={saveChanges}
-            disabled={saving}
-          >
-            <i className="fas fa-save me-2"></i>
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
-        </Form>
-
-        <hr className="my-4" />
-
-        <div className="d-flex justify-content-between align-items-center">
-          <span>
-            <i className="fas fa-lock me-2"></i>Two Factor Auth
-          </span>
-          <Button
-            size="sm"
-            variant={user.twoFactorAuth ? "danger" : "outline-primary"}
-            onClick={toggle2FA}
-            disabled={toggleLoading}
-          >
-            {toggleLoading
-              ? "Please wait..."
-              : user.twoFactorAuth
-              ? "Disable"
-              : "Enable"}
-          </Button>
-        </div>
-
-        {qrCode && (
-          <div className="text-center mt-3">
-            <h6 className="text-muted mb-2">
-              <i className="fas fa-qrcode me-2"></i>Scan with Google Authenticator
-            </h6>
-            <img
-              src={qrCode}
-              alt="QR Code"
-              className="border rounded p-2"
-              style={{ width: "160px", height: "160px" }}
-            />
-          </div>
-        )}
-      </Col>
-
-      {/* RIGHT PANEL: User Interaction */}
-      <Col md={7} className="bg-white rounded-4 shadow-sm p-4">
-        <Form.Control
-          type="text"
-          placeholder="Search for users..."
-          className="mb-3"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        {suggestions.length > 0 && (
-          <div
-            className="border rounded p-2 mb-4 bg-light"
-            style={{ maxHeight: "180px", overflowY: "auto" }}
-          >
-            {suggestions.map((u) => (
-              <div
-                key={u._id}
-                className="d-flex align-items-center justify-content-between mb-2"
+            {profilePic && (
+              <Button
+                variant="primary"
+                className="mt-2"
+                onClick={uploadProfile}
+                disabled={uploading}
               >
-                <div
-                  onClick={() => handleSearchSelect(u.username)}
-                  className="d-flex align-items-center cursor-pointer"
-                >
-                  <Image
-                    src={
-                      u.profilePicture
-                        ? `http://localhost:5000${u.profilePicture}`
-                        : "https://placehold.co/40x40?text=User"
-                    }
-                    roundedCircle
-                    width={40}
-                    height={40}
-                  />
-                  <span className="ms-2 fw-medium">{u.username}</span>
-                </div>
-                <Button
-                  size="sm"
-                  variant={followMap[u._id] ? "danger" : "primary"}
-                  onClick={() => toggleFollow(u._id)}
-                >
-                  <i
-                    className={`fas ${
-                      followMap[u._id] ? "fa-user-minus" : "fa-user-plus"
-                    } me-1`}
-                  ></i>
-                  {followMap[u._id] ? "Unfollow" : "Follow"}
-                </Button>
-              </div>
-            ))}
+                <i className="fas fa-upload me-2"></i>
+                {uploading ? "Uploading..." : "Upload Image"}
+              </Button>
+            )}
           </div>
-        )}
 
-        <Row>
-          <Col md={6}>
-            <h6 className="mb-3">
-              <i className="fas fa-users me-2 text-secondary"></i>Followers
-            </h6>
-            <div style={{ maxHeight: "220px", overflowY: "auto" }}>
-              {followers.map((f) => (
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>
+                <i className="fas fa-user-edit me-2"></i>Edit Username
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Form.Group>
+
+            <Button
+              variant="success"
+              className="w-100"
+              onClick={saveChanges}
+              disabled={saving}
+            >
+              <i className="fas fa-save me-2"></i>
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </Form>
+
+          <hr className="my-4" />
+
+          <div className="d-flex justify-content-between align-items-center">
+            <span>
+              <i className="fas fa-lock me-2"></i>Two Factor Auth
+            </span>
+            <Button
+              size="sm"
+              variant={user.twoFactorAuth ? "danger" : "outline-primary"}
+              onClick={toggle2FA}
+              disabled={toggleLoading}
+            >
+              {toggleLoading
+                ? "Please wait..."
+                : user.twoFactorAuth
+                ? "Disable"
+                : "Enable"}
+            </Button>
+          </div>
+
+          {qrCode && (
+            <div className="text-center mt-3">
+              <h6 className="text-muted mb-2">
+                <i className="fas fa-qrcode me-2"></i>Scan with Google
+                Authenticator
+              </h6>
+              <img
+                src={qrCode}
+                alt="QR Code"
+                className="border rounded p-2"
+                style={{ width: "160px", height: "160px" }}
+              />
+            </div>
+          )}
+        </Col>
+
+        {/* RIGHT PANEL: User Interaction */}
+        <Col md={7} className="bg-white rounded-4 shadow-sm p-4">
+          <Form.Control
+            type="text"
+            placeholder="Search for users..."
+            className="mb-3"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {suggestions.length > 0 && (
+            <div
+              className="border rounded p-2 mb-4 bg-light"
+              style={{ maxHeight: "180px", overflowY: "auto" }}
+            >
+              {suggestions.map((u) => (
                 <div
-                  key={f._id}
-                  className="d-flex align-items-center mb-2 cursor-pointer"
-                  onClick={() => navigate(`/user/${f.username}`)}
+                  key={u._id}
+                  className="d-flex align-items-center justify-content-between mb-2"
                 >
-                  <Image
-                    src={
-                      f.profilePicture
-                        ? `http://localhost:5000${f.profilePicture}`
-                        : "https://placehold.co/40x40?text=User"
-                    }
-                    roundedCircle
-                    width={40}
-                    height={40}
-                  />
-                  <span className="ms-2">{f.username}</span>
+                  <div
+                    onClick={() => handleSearchSelect(u.username)}
+                    className="d-flex align-items-center cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        u.profilePicture
+                          ? `${BACKEND_URL}${u.profilePicture}`
+                          : "https://placehold.co/40x40?text=User"
+                      }
+                      roundedCircle
+                      width={40}
+                      height={40}
+                    />
+                    <span className="ms-2 fw-medium">{u.username}</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={followMap[u._id] ? "danger" : "primary"}
+                    onClick={() => toggleFollow(u._id)}
+                  >
+                    <i
+                      className={`fas ${
+                        followMap[u._id] ? "fa-user-minus" : "fa-user-plus"
+                      } me-1`}
+                    ></i>
+                    {followMap[u._id] ? "Unfollow" : "Follow"}
+                  </Button>
                 </div>
               ))}
             </div>
-          </Col>
+          )}
 
-          <Col md={6}>
-            <h6 className="mb-3">
-              <i className="fas fa-user-friends me-2 text-secondary"></i>Following
-            </h6>
-            <div style={{ maxHeight: "220px", overflowY: "auto" }}>
-              {following.map((f) => (
-                <div
-                  key={f._id}
-                  className="d-flex justify-content-between align-items-center mb-2"
-                >
+          <Row>
+            <Col md={6}>
+              <h6 className="mb-3">
+                <i className="fas fa-users me-2 text-secondary"></i>Followers
+              </h6>
+              <div style={{ maxHeight: "220px", overflowY: "auto" }}>
+                {followers.map((f) => (
                   <div
-                    className="d-flex align-items-center cursor-pointer"
+                    key={f._id}
+                    className="d-flex align-items-center mb-2 cursor-pointer"
                     onClick={() => navigate(`/user/${f.username}`)}
                   >
                     <Image
                       src={
                         f.profilePicture
-                          ? `http://localhost:5000${f.profilePicture}`
+                          ? `${BACKEND_URL}${f.profilePicture}`
                           : "https://placehold.co/40x40?text=User"
                       }
                       roundedCircle
@@ -509,35 +469,60 @@ return (
                     />
                     <span className="ms-2">{f.username}</span>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={() => toggleFollow(f._id)}
+                ))}
+              </div>
+            </Col>
+
+            <Col md={6}>
+              <h6 className="mb-3">
+                <i className="fas fa-user-friends me-2 text-secondary"></i>
+                Following
+              </h6>
+              <div style={{ maxHeight: "220px", overflowY: "auto" }}>
+                {following.map((f) => (
+                  <div
+                    key={f._id}
+                    className="d-flex justify-content-between align-items-center mb-2"
                   >
-                    <i className="fas fa-user-minus me-1"></i>Unfollow
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </Col>
-        </Row>
-
-      </Col>
-      
-
-    </Row>
-    {/* Posts Grid */}
+                    <div
+                      className="d-flex align-items-center cursor-pointer"
+                      onClick={() => navigate(`/user/${f.username}`)}
+                    >
+                      <Image
+                        src={
+                          f.profilePicture
+                            ? `${BACKEND_URL}${f.profilePicture}`
+                            : "https://placehold.co/40x40?text=User"
+                        }
+                        roundedCircle
+                        width={40}
+                        height={40}
+                      />
+                      <span className="ms-2">{f.username}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => toggleFollow(f._id)}
+                    >
+                      <i className="fas fa-user-minus me-1"></i>Unfollow
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+      {/* Posts Grid */}
       <Row className="px-5">
         <Col>
           <h5 className="mb-3">Posts</h5>
           <UserPosts userId={user._id} showActions={false} />
-
         </Col>
       </Row>
-    
-  </Container>
-);
-
+    </Container>
+  );
 }
 
 export default Profile;

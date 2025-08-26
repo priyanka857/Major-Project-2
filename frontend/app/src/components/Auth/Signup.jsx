@@ -5,6 +5,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import Loader from '../Loader';
 import Message from '../Message';
 
+// Use Render backend URL
+const API_BASE = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
+
 function Signup() {
   const navigate = useNavigate();
 
@@ -46,13 +49,12 @@ function Signup() {
 
     try {
       setLoading(true);
-      const { data } = await axios.post('http://localhost:5000/api/auth/signup', {
+      const { data } = await axios.post(`${API_BASE}/api/auth/signup`, {
         username: formData.username,
         email: formData.email,
         password: formData.password,
       });
       localStorage.setItem('userInfo', JSON.stringify(data));
-
 
       setAlert({
         show: true,

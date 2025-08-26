@@ -13,6 +13,8 @@ import Loader from "../components/Loader";
 import Message from "../components/Message";
 import PostForm from "../Posts/PostForm";
 
+const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ const Home = () => {
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("http://localhost:5000/api/posts", config);
+      const { data } = await axios.get(`${BACKEND_URL}/api/posts`, config);
       setPosts(data);
       setError(null);
     } catch (err) {
@@ -63,7 +65,7 @@ const Home = () => {
 
     try {
       const { data } = await axios.post(
-        `http://localhost:5000/api/posts/${postId}/comments`,
+        `${BACKEND_URL}/api/posts/${postId}/comments`,
         { text: comment },
         config
       );
@@ -86,7 +88,7 @@ const Home = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/posts/${selectedPostId}`, config);
+      await axios.delete(`${BACKEND_URL}/api/posts/${selectedPostId}`, config);
       setPosts((prev) => prev.filter((post) => post._id !== selectedPostId));
       setMessage("🗑️ Post deleted successfully.");
       setTimeout(() => setMessage(null), 3000);
@@ -149,7 +151,7 @@ const Home = () => {
                 {post.image && (
                   <Card.Img
                     variant="top"
-                    src={`http://localhost:5000/${post.image}`}
+                    src={`${BACKEND_URL}/${post.image}`}
                     className="rounded-0"
                     style={{
                       width: "100%",

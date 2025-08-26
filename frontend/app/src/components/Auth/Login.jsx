@@ -5,6 +5,9 @@ import { useNavigate, Link } from "react-router-dom";
 import Loader from "../Loader";
 import Message from "../Message";
 
+// Use Render backend URL
+const API_BASE = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
+
 function Login() {
   const navigate = useNavigate();
 
@@ -19,7 +22,6 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!email || !password) {
       setAlert({
         show: true,
@@ -42,7 +44,7 @@ function Login() {
       setLoading(true);
 
       const { data } = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${API_BASE}/api/auth/login`,
         {
           email,
           password,
@@ -62,20 +64,8 @@ function Login() {
         setAlert({ show: false, variant: "", message: "" });
         navigate("/profile");
       }, 1500);
-      localStorage.setItem("userInfo", JSON.stringify(data));
 
       window.dispatchEvent(new Event("userInfoUpdated"));
-
-      setAlert({
-        show: true,
-        variant: "success",
-        message: "Login successful! Redirecting...",
-      });
-
-      setTimeout(() => {
-        setAlert({ show: false, variant: "", message: "" });
-        navigate("/profile");
-      }, 1500);
     } catch (error) {
       const msg = error.response?.data?.message || "Login failed.";
 

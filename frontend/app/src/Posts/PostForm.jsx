@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Form, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
 
+const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+
 const PostForm = ({ onPostCreated }) => {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
@@ -26,7 +28,7 @@ const PostForm = ({ onPostCreated }) => {
 
     try {
       setLoading(true);
-      await axios.post("http://localhost:5000/api/posts", formData, config);
+      await axios.post(`${BACKEND_URL}/api/posts`, formData, config);
       setContent("");
       setImage(null);
       if (onPostCreated) onPostCreated(); // notify parent to refresh posts

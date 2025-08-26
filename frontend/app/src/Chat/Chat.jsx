@@ -3,7 +3,8 @@ import axios from "axios";
 import io from "socket.io-client";
 import { useParams, useLocation } from "react-router-dom";
 
-const ENDPOINT = "http://localhost:5000";
+// Replace localhost with Render backend URL
+const ENDPOINT = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
 let socket;
 let typingTimeout;
 
@@ -38,7 +39,7 @@ const Chat = () => {
       try {
         const token = JSON.parse(localStorage.getItem("userInfo"))?.token;
         const { data } = await axios.get(
-          `http://localhost:5000/api/chats/message/${chatId}`,
+          `${ENDPOINT}/api/chats/message/${chatId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -63,7 +64,7 @@ const Chat = () => {
       setIsTyping(false);
 
       const { data } = await axios.post(
-        "http://localhost:5000/api/chats/message",
+        `${ENDPOINT}/api/chats/message`,
         {
           chatId: chatId,
           content: message,

@@ -5,6 +5,8 @@ import { Card, Button, Form, Row, Col, Image } from "react-bootstrap";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
+const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+
 const UserPosts = ({ userId, showActions = true }) => {
   const [posts, setPosts] = useState([]);
   const [commentTexts, setCommentTexts] = useState({});
@@ -19,31 +21,25 @@ const UserPosts = ({ userId, showActions = true }) => {
     },
   };
 
- useEffect(() => {
-  const fetchUserPosts = async () => {
-    const config = {
-      headers: { Authorization: `Bearer ${userInfo?.token}` },
+  useEffect(() => {
+    const fetchUserPosts = async () => {
+      try {
+        setLoading(true);
+        const { data } = await axios.get(
+          `${BACKEND_URL}/api/posts/user/${userId || userInfo._id}`,
+          config
+        );
+        setPosts(data);
+        setError(null);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load posts");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    try {
-      setLoading(true);
-      const { data } = await axios.get(
-        `http://localhost:5000/api/posts/user/${userId || userInfo._id}`,
-        config
-      );
-      setPosts(data);
-      setError(null);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load posts");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (userInfo?.token) fetchUserPosts();
-}, [userId, userInfo?._id, userInfo?.token]);
-
-
+    if (userInfo?.token) fetchUserPosts();
+  }, [userId, userInfo?._id, userInfo?.token]);
 
   const handleAddComment = async (e, postId) => {
     e.preventDefault();
@@ -52,7 +48,7 @@ const UserPosts = ({ userId, showActions = true }) => {
 
     try {
       const { data } = await axios.post(
-        `http://localhost:5000/api/posts/${postId}/comments`,
+        `${BACKEND_URL}/api/posts/${postId}/comments`,
         { text: comment },
         config
       );
@@ -67,7 +63,7 @@ const UserPosts = ({ userId, showActions = true }) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/posts/${postId}`, config);
+      await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, config);
       setPosts((prev) => prev.filter((p) => p._id !== postId));
       setMessage("🗑️ Post deleted successfully.");
       setTimeout(() => setMessage(null), 3000);
@@ -89,7 +85,7 @@ const UserPosts = ({ userId, showActions = true }) => {
           <Col key={post._id} xs={12} sm={6} md={4}>
             <div className="border rounded overflow-hidden">
               <Image
-                src={`http://localhost:5000/${post.image}`}
+                src={post.image ? `${BACKEND_URL}/${post.image}` : "/default.png"}
                 alt="Post"
                 className="w-100"
                 style={{ aspectRatio: "1/1", objectFit: "cover" }}
@@ -114,7 +110,7 @@ const UserPosts = ({ userId, showActions = true }) => {
           <Card.Header className="d-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center gap-3">
               <img
-                src={post.user.profilePicture || "/default.png"}
+                src={post.user.profilePicture ? `${BACKEND_URL}${post.user.profilePicture}` : "/default.png"}
                 alt="profile"
                 className="rounded-circle"
                 width={40}
@@ -136,7 +132,7 @@ const UserPosts = ({ userId, showActions = true }) => {
           {post.image && (
             <Card.Img
               variant="top"
-              src={`http://localhost:5000/${post.image}`}
+              src={`${BACKEND_URL}/${post.image}`}
               style={{
                 width: "100%",
                 objectFit: "contain",
@@ -157,7 +153,7 @@ const UserPosts = ({ userId, showActions = true }) => {
               {post.comments.map((comment, idx) => (
                 <li key={idx} className="mb-2 d-flex align-items-start gap-2">
                   <img
-                    src={comment.user.profilePicture || "/default.png"}
+                    src={comment.user.profilePicture ? `${BACKEND_URL}${comment.user.profilePicture}` : "/default.png"}
                     alt=""
                     width={30}
                     height={30}

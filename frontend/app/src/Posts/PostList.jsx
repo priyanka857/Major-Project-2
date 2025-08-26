@@ -4,6 +4,8 @@ import axios from "axios";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
+const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
+
 const PostList = () => {
   const [posts, setPosts] = useState([]);
   const [comment, setComment] = useState({});
@@ -17,7 +19,7 @@ const PostList = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("http://localhost:5000/api/posts", {
+      const { data } = await axios.get(`${BACKEND_URL}/api/posts`, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       });
       setPosts(data.reverse());
@@ -39,7 +41,7 @@ const PostList = () => {
 
     try {
       await axios.post(
-        `http://localhost:5000/api/posts/${postId}/comments`,
+        `${BACKEND_URL}/api/posts/${postId}/comments`,
         { text: comment[postId] },
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
@@ -56,7 +58,7 @@ const PostList = () => {
   const handleDeletePost = async (postId) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/posts/${postId}`, {
+        await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
         setSuccess("Post deleted successfully.");
@@ -94,7 +96,7 @@ const PostList = () => {
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <div className="d-flex align-items-center">
                   <Image
-                    src={post.user?.profilePicture || "/uploads/default.jpg"}
+                    src={post.user?.profilePicture ? `${BACKEND_URL}${post.user.profilePicture}` : "/uploads/default.jpg"}
                     alt="profile"
                     roundedCircle
                     width={40}
@@ -118,11 +120,7 @@ const PostList = () => {
 
               {post.image && (
                 <img
-                  src={
-                    post.image.startsWith("http")
-                      ? post.image
-                      : `http://localhost:5000/${post.image}`
-                  }
+                  src={post.image.startsWith("http") ? post.image : `${BACKEND_URL}/${post.image}`}
                   alt="post"
                   className="w-100 rounded mt-2"
                   style={{ maxHeight: 300, objectFit: "cover" }}
@@ -135,10 +133,7 @@ const PostList = () => {
                   placeholder="Write a comment..."
                   value={comment[post._id] || ""}
                   onChange={(e) =>
-                    setComment((prev) => ({
-                      ...prev,
-                      [post._id]: e.target.value,
-                    }))
+                    setComment((prev) => ({ ...prev, [post._id]: e.target.value }))
                   }
                 />
                 <Button
@@ -158,7 +153,7 @@ const PostList = () => {
                       className="border-top pt-2 mt-2 small d-flex align-items-start gap-2"
                     >
                       <Image
-                        src={c.user?.profilePicture || "/uploads/default.jpg"}
+                        src={c.user?.profilePicture ? `${BACKEND_URL}${c.user.profilePicture}` : "/uploads/default.jpg"}
                         alt={c.username}
                         roundedCircle
                         width={25}

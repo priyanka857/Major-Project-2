@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import { Container, Card, Image, Spinner, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { Container, Card, Image, Spinner, Button } from "react-bootstrap";
+
+const BACKEND_URL = "https://socialmedia-backend-yfjp.onrender.com";
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -12,7 +14,7 @@ const UserProfile = () => {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     if (!userInfo || !userInfo.token) return;
 
     setCurrentUserId(userInfo._id); // Logged in user ID
@@ -20,15 +22,17 @@ const UserProfile = () => {
     const fetchUser = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/api/users/profile/${username}`,
+          `${BACKEND_URL}/api/users/profile/${username}`,
           {
             headers: { Authorization: `Bearer ${userInfo.token}` },
           }
         );
         setUser(data);
-        setIsFollowing(data.followers.map(id => id.toString()).includes(userInfo._id));
+        setIsFollowing(
+          data.followers.map((id) => id.toString()).includes(userInfo._id)
+        );
       } catch (err) {
-        console.error('Error loading profile:', err);
+        console.error("Error loading profile:", err);
       } finally {
         setLoading(false);
       }
@@ -38,19 +42,19 @@ const UserProfile = () => {
   }, [username]);
 
   const handleFollowToggle = async () => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     if (!userInfo || !userInfo.token || !user?._id) return;
 
     setProcessing(true);
 
     try {
       const endpoint = isFollowing
-        ? `http://localhost:5000/api/users/${user._id}/unfollow`
-        : `http://localhost:5000/api/users/${user._id}/follow`;
+        ? `${BACKEND_URL}/api/users/${user._id}/unfollow`
+        : `${BACKEND_URL}/api/users/${user._id}/follow`;
 
       await axios.post(
         endpoint,
-        { followerId: currentUserId }, // ✅ send your ID
+        { followerId: currentUserId },
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }
@@ -58,7 +62,6 @@ const UserProfile = () => {
 
       setIsFollowing(!isFollowing);
 
-      // Update local followers list
       setUser((prev) => ({
         ...prev,
         followers: isFollowing
@@ -72,8 +75,10 @@ const UserProfile = () => {
     }
   };
 
-  if (loading) return <Spinner animation="border" className="mt-5" />;
-  if (!user) return <p className="mt-5 text-danger">User not found.</p>;
+  if (loading)
+    return <Spinner animation="border" className="mt-5 d-block mx-auto" />;
+  if (!user)
+    return <p className="mt-5 text-danger text-center">User not found.</p>;
 
   return (
     <Container className="mt-5">
@@ -82,8 +87,8 @@ const UserProfile = () => {
           <Image
             src={
               user.profilePicture
-                ? `http://localhost:5000${user.profilePicture}`
-                : 'https://via.placeholder.com/100'
+                ? `${BACKEND_URL}${user.profilePicture}`
+                : "https://via.placeholder.com/100"
             }
             roundedCircle
             width={100}
@@ -91,8 +96,12 @@ const UserProfile = () => {
           />
           <h3 className="mt-3">@{user.username}</h3>
           <p>{user.email}</p>
-          <p><strong>Followers:</strong> {user.followers.length}</p>
-          <p><strong>Following:</strong> {user.following.length}</p>
+          <p>
+            <strong>Followers:</strong> {user.followers.length}
+          </p>
+          <p>
+            <strong>Following:</strong> {user.following.length}
+          </p>
 
           {currentUserId !== user._id && (
             <Button
