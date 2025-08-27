@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  InputGroup,
-} from "react-bootstrap";
+import { Container, Row, Col, Card, Form, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
 
-// Use Render backend URL instead of localhost
-const API_BASE = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
+// Backend URL
+const API_BASE =
+  process.env.REACT_APP_API_BASE ||
+  "https://socialmedia-backend-yfjp.onrender.com";
 
 const ChatList = () => {
   const [chats, setChats] = useState([]);
@@ -53,12 +48,12 @@ const ChatList = () => {
     const filtered = chats.filter((chat) =>
       chat.users.some(
         (u) =>
-          u._id !== userInfo._id &&
+          u._id !== userInfo?._id &&
           u.username.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
     setFilteredChats(filtered);
-  }, [searchTerm, chats, userInfo._id]);
+  }, [searchTerm, chats, userInfo?._id]);
 
   // Backend user search for suggestions
   useEffect(() => {
@@ -99,14 +94,16 @@ const ChatList = () => {
         }
       );
       navigate(`/chat/${chat._id}`, { state: { selectedChat: chat } });
+      setSearchTerm("");
+      setSearchResults([]);
     } catch (err) {
       console.error("Chat access failed:", err);
     }
   };
 
   // Open existing chat
-  const handleChatClick = (chatId) => {
-    navigate(`/chat/${chatId}`);
+  const handleChatClick = (chat) => {
+    navigate(`/chat/${chat._id}`, { state: { selectedChat: chat } });
   };
 
   return (
@@ -181,13 +178,13 @@ const ChatList = () => {
           ) : (
             filteredChats.map((chat) => {
               const otherUser = chat.users.find(
-                (u) => u._id !== userInfo._id
+                (u) => u._id !== userInfo?._id
               );
               return (
                 <Card
                   key={chat._id}
                   className="mb-3 shadow-sm cursor-pointer"
-                  onClick={() => handleChatClick(chat._id)}
+                  onClick={() => handleChatClick(chat)}
                 >
                   <Card.Body className="d-flex align-items-center gap-3">
                     <img
@@ -199,7 +196,9 @@ const ChatList = () => {
                     />
                     <div>
                       <strong>@{otherUser.username}</strong>
-                      <div className="text-muted small">Click to open chat</div>
+                      <div className="text-muted small">
+                        Click to open chat
+                      </div>
                     </div>
                     <i className="fas fa-chevron-right ms-auto text-secondary" />
                   </Card.Body>

@@ -20,15 +20,17 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Upload Profile Picture
+// Upload Profile Picture (Cloudinary)
 const uploadProfilePicture = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     if (req.file) {
-      user.profilePicture = `/uploads/${req.file.filename}`;
+      // Cloudinary multer storage gives us secure_url in req.file.path
+      user.profilePicture = req.file.path;  
       await user.save();
+
       return res.status(200).json({
         message: "Profile picture updated",
         profilePicture: user.profilePicture,

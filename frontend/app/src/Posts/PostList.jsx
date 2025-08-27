@@ -72,6 +72,12 @@ const PostList = () => {
     }
   };
 
+  // ✅ Helper function to resolve image URLs
+  const getImageUrl = (path) => {
+    if (!path) return "/uploads/default.jpg";
+    return path.startsWith("http") ? path : `${BACKEND_URL}${path}`;
+  };
+
   return (
     <>
       {error && (
@@ -96,7 +102,7 @@ const PostList = () => {
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <div className="d-flex align-items-center">
                   <Image
-                    src={post.user?.profilePicture ? `${BACKEND_URL}${post.user.profilePicture}` : "/uploads/default.jpg"}
+                    src={getImageUrl(post.user?.profilePicture)}
                     alt="profile"
                     roundedCircle
                     width={40}
@@ -120,7 +126,7 @@ const PostList = () => {
 
               {post.image && (
                 <img
-                  src={post.image.startsWith("http") ? post.image : `${BACKEND_URL}/${post.image}`}
+                  src={getImageUrl(post.image)}
                   alt="post"
                   className="w-100 rounded mt-2"
                   style={{ maxHeight: 300, objectFit: "cover" }}
@@ -133,7 +139,10 @@ const PostList = () => {
                   placeholder="Write a comment..."
                   value={comment[post._id] || ""}
                   onChange={(e) =>
-                    setComment((prev) => ({ ...prev, [post._id]: e.target.value }))
+                    setComment((prev) => ({
+                      ...prev,
+                      [post._id]: e.target.value,
+                    }))
                   }
                 />
                 <Button
@@ -153,7 +162,7 @@ const PostList = () => {
                       className="border-top pt-2 mt-2 small d-flex align-items-start gap-2"
                     >
                       <Image
-                        src={c.user?.profilePicture ? `${BACKEND_URL}${c.user.profilePicture}` : "/uploads/default.jpg"}
+                        src={getImageUrl(c.user?.profilePicture)}
                         alt={c.username}
                         roundedCircle
                         width={25}
@@ -161,7 +170,8 @@ const PostList = () => {
                         style={{ objectFit: "cover" }}
                       />
                       <div>
-                        <strong>@{c.user?.username || c.username}</strong>: {c.text}
+                        <strong>@{c.user?.username || c.username}</strong>:{" "}
+                        {c.text}
                       </div>
                     </div>
                   ))}

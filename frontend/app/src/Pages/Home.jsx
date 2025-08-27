@@ -16,9 +16,13 @@ import PostForm from "../Posts/PostForm";
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
 
-// Helper function to safely prepend backend URL
-const getImageUrl = (path) =>
-  path ? `${BACKEND_URL}/${path.replace(/^\/+/, "")}` : "/default.png";
+// ✅ Helper: works for both Cloudinary & local backend images
+const getImageUrl = (path) => {
+  if (!path) return "/default.png";
+  return path.startsWith("http")
+    ? path
+    : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
+};
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -133,15 +137,15 @@ const Home = () => {
                 <Card.Header className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center gap-3">
                     <img
-                      src={getImageUrl(post.user.profilePicture)}
+                      src={getImageUrl(post.user?.profilePicture)}
                       alt="profile"
                       className="rounded-circle object-cover"
                       width={40}
                       height={40}
                     />
-                    <strong>@{post.user.username}</strong>
+                    <strong>@{post.user?.username}</strong>
                   </div>
-                  {post.user._id === userInfo._id && (
+                  {post.user?._id?.toString() === userInfo?._id?.toString() && (
                     <Button
                       variant="outline-danger"
                       size="sm"
@@ -178,14 +182,14 @@ const Home = () => {
                     {post.comments.map((comment, idx) => (
                       <li key={idx} className="mb-2 d-flex align-items-start gap-2">
                         <img
-                          src={getImageUrl(comment.user.profilePicture)}
-                          alt=""
+                          src={getImageUrl(comment.user?.profilePicture)}
+                          alt="profile"
                           width={30}
                           height={30}
                           className="rounded-circle"
                         />
                         <div>
-                          <strong>@{comment.user.username}:</strong>{" "}
+                          <strong>@{comment.user?.username}:</strong>{" "}
                           <span>{comment.text}</span>
                         </div>
                       </li>

@@ -292,7 +292,7 @@ function Profile() {
               <Image
                 src={
                   user.profilePicture
-                    ? `${BACKEND_URL}${user.profilePicture}` // localhost replace with BACKEND_URL
+                    ? user.profilePicture // Cloudinary URL direct ah
                     : "https://placehold.co/120x120?text=User"
                 }
                 roundedCircle
@@ -418,7 +418,7 @@ function Profile() {
                     <Image
                       src={
                         u.profilePicture
-                          ? `${BACKEND_URL}${u.profilePicture}`
+                          ? u.profilePicture
                           : "https://placehold.co/40x40?text=User"
                       }
                       roundedCircle
@@ -459,7 +459,7 @@ function Profile() {
                     <Image
                       src={
                         f.profilePicture
-                          ? `${BACKEND_URL}${f.profilePicture}`
+                          ? f.profilePicture
                           : "https://placehold.co/40x40?text=User"
                       }
                       roundedCircle
@@ -490,7 +490,7 @@ function Profile() {
                       <Image
                         src={
                           f.profilePicture
-                            ? `${BACKEND_URL}${f.profilePicture}`
+                            ? f.profilePicture
                             : "https://placehold.co/40x40?text=User"
                         }
                         roundedCircle

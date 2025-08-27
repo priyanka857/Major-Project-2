@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
+
 const {
   getProfile,
   updateProfile,
@@ -15,28 +17,16 @@ const {
 } = require("../controller/userController");
 const { protect } = require("../middleware/authMiddleware");
 
-// File upload setup
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename(req, file, cb) {
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
+// Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "profile_pictures",   // Cloudinary la save aagum folder name
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
   },
 });
 
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb("Invalid file type. Only images are allowed.", false);
-  }
-};
-
-const upload = multer({ storage, fileFilter });
+const upload = multer({ storage });
 
 // Profile routes
 router.get("/profile", protect, getProfile);

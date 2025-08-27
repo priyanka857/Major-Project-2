@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Container, Card, Image, Spinner, Button } from "react-bootstrap";
 
-const BACKEND_URL = process.env.REACT_APP_API_BASE;
+const BACKEND_URL =
+  process.env.REACT_APP_API_BASE || import.meta.env.VITE_API_BASE || "";
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -12,27 +13,37 @@ const UserProfile = () => {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isFollowing, setIsFollowing] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-    if (!userInfo || !userInfo.token) return;
+    if (!userInfo || !userInfo.token) {
+      setError("Please login to view profiles.");
+      setLoading(false);
+      return;
+    }
 
-    setCurrentUserId(userInfo._id); // Logged in user ID
+    setCurrentUserId(userInfo._id);
 
     const fetchUser = async () => {
       try {
+        setError("");
         const { data } = await axios.get(
           `${BACKEND_URL}/api/users/profile/${username}`,
           {
             headers: { Authorization: `Bearer ${userInfo.token}` },
           }
         );
-        setUser(data);
-        setIsFollowing(
-          data.followers.map((id) => id.toString()).includes(userInfo._id)
-        );
+
+        // Safe fallback for followers/following
+        const followers = data.followers || [];
+        const following = data.following || [];
+
+        setUser({ ...data, followers, following });
+        setIsFollowing(followers.map((id) => id.toString()).includes(userInfo._id));
       } catch (err) {
         console.error("Error loading profile:", err);
+        setError("User not found.");
       } finally {
         setLoading(false);
       }
@@ -62,12 +73,15 @@ const UserProfile = () => {
 
       setIsFollowing(!isFollowing);
 
-      setUser((prev) => ({
-        ...prev,
-        followers: isFollowing
-          ? prev.followers.filter((id) => id !== currentUserId)
-          : [...prev.followers, currentUserId],
-      }));
+      setUser((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          followers: isFollowing
+            ? prev.followers.filter((id) => id !== currentUserId)
+            : [...prev.followers, currentUserId],
+        };
+      });
     } catch (err) {
       console.error("Follow/Unfollow failed", err);
     } finally {
@@ -77,6 +91,8 @@ const UserProfile = () => {
 
   if (loading)
     return <Spinner animation="border" className="mt-5 d-block mx-auto" />;
+  if (error)
+    return <p className="mt-5 text-danger text-center">{error}</p>;
   if (!user)
     return <p className="mt-5 text-danger text-center">User not found.</p>;
 
@@ -86,7 +102,9 @@ const UserProfile = () => {
         <div className="text-center">
           <Image
             src={
-              user.profilePicture
+              user.profilePicture?.startsWith("http")
+                ? user.profilePicture
+                : user.profilePicture
                 ? `${BACKEND_URL}${user.profilePicture}`
                 : "https://via.placeholder.com/100"
             }
@@ -97,10 +115,10 @@ const UserProfile = () => {
           <h3 className="mt-3">@{user.username}</h3>
           <p>{user.email}</p>
           <p>
-            <strong>Followers:</strong> {user.followers.length}
+            <strong>Followers:</strong> {user.followers?.length || 0}
           </p>
           <p>
-            <strong>Following:</strong> {user.following.length}
+            <strong>Following:</strong> {user.following?.length || 0}
           </p>
 
           {currentUserId !== user._id && (

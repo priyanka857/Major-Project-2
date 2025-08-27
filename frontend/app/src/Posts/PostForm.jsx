@@ -11,27 +11,46 @@ const PostForm = ({ onPostCreated }) => {
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${userInfo?.token}`,
-      "Content-Type": "multipart/form-data",
-    },
+  // ✅ Cloudinary upload function
+  const uploadToCloudinary = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "YOUR_UPLOAD_PRESET"); // replace with your Cloudinary preset
+    data.append("cloud_name", "YOUR_CLOUD_NAME"); // replace with your Cloudinary cloud name
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload`,
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const result = await res.json();
+    return result.secure_url; // return Cloudinary image URL
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim() && !image) return;
 
-    const formData = new FormData();
-    formData.append("content", content);
-    if (image) formData.append("image", image);
-
     try {
       setLoading(true);
-      await axios.post(`${BACKEND_URL}/api/posts`, formData, config);
+
+      let imageUrl = "";
+      if (image) {
+        imageUrl = await uploadToCloudinary(image); // upload to cloudinary
+      }
+
+      await axios.post(
+        `${BACKEND_URL}/api/posts`,
+        { content, image: imageUrl }, // send only URL to backend
+        { headers: { Authorization: `Bearer ${userInfo?.token}` } }
+      );
+
       setContent("");
       setImage(null);
-      if (onPostCreated) onPostCreated(); // notify parent to refresh posts
+      if (onPostCreated) onPostCreated(); // refresh posts
     } catch (error) {
       console.error("Post upload error:", error);
     } finally {
