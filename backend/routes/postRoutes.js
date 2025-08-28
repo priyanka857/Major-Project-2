@@ -13,7 +13,7 @@ const {
 const { protect } = require("../middleware/authMiddleware");
 
 router.post("/", protect, upload.single("image"), createPost);
-router.get("/", protect, getAllPosts);
+router.get("/",getAllPosts);
 
 // More specific route first
 router.get("/user/:userId", protect, getUserPosts);
