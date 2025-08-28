@@ -4,37 +4,18 @@ const cors = require("cors");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
-
 const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-const postRoutes = require("./routes/postRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 
 dotenv.config();
 const app = express();
 connectDB();
 
-// Middleware
-app.use(
-  cors({
-    origin: ['http://localhost:3000', 'https://socialmedia-frontend-jkwq.onrender.com'],
-    credentials: true,
-  })
-);
-
+app.use(cors({ origin: ['http://localhost:3000', 'https://socialmedia-frontend-jkwq.onrender.com'], credentials: true }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
 app.use("/api/chats", chatRoutes);
 
-app.get("/", (req, res) => res.send("API is running"));
-
-// Socket.IO setup
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -44,16 +25,41 @@ const io = new Server(server, {
   },
 });
 
-
+// Socket.IO
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
-  socket.on("join", (userId) => {
+  // setup user
+  socket.on("setup", (userId) => {
     socket.join(userId);
+    socket.emit("connected");
   });
 
-  socket.on("sendMessage", ({ sender, receiver, text }) => {
-    io.to(receiver).emit("receiveMessage", { sender, receiver, text });
+  // join chat room
+  socket.on("join chat", (chatId) => {
+    socket.join(chatId);
+    console.log(`User joined chat: ${chatId}`);
+  });
+
+  // new message
+  socket.on("new message", async (message) => {
+    const chat = await Chat.findById(message.chat); // Chat model import pannunga
+    if (!chat) return;
+
+    chat.users.forEach((userId) => {
+      if (userId.toString() !== message.sender.toString()) {
+        socket.to(userId.toString()).emit("message received", message);
+      }
+    });
+  });
+
+  // typing
+  socket.on("typing", ({ chatId, user }) => {
+    socket.to(chatId).emit("typing", user);
+  });
+
+  socket.on("stop typing", ({ chatId, user }) => {
+    socket.to(chatId).emit("stop typing", user);
   });
 
   socket.on("disconnect", () => {
@@ -61,6 +67,5 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
