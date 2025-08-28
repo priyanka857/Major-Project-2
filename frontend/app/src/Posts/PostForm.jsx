@@ -1,17 +1,18 @@
 import React, { useState } from "react";
-import { Form, Button, Spinner } from "react-bootstrap";
+import { Form, Button, Image } from "react-bootstrap";
 import axios from "axios";
+import Loader from "../components/Loader";
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE;
 
 const PostForm = ({ onPostCreated }) => {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-  // ✅ Cloudinary upload function
   const uploadToCloudinary = async (file) => {
     const data = new FormData();
     data.append("file", file);
@@ -19,16 +20,26 @@ const PostForm = ({ onPostCreated }) => {
 
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUDNAME}/image/upload`,
-      {
-        method: "POST",
-        body: data,
-      }
+      { method: "POST", body: data }
     );
 
     if (!res.ok) throw new Error("Failed to upload image to Cloudinary");
 
     const result = await res.json();
-    return result.secure_url; // ✅ Cloudinary image URL
+    return result.secure_url;
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e) => {
@@ -39,9 +50,7 @@ const PostForm = ({ onPostCreated }) => {
       setLoading(true);
 
       let imageUrl = "";
-      if (image) {
-        imageUrl = await uploadToCloudinary(image);
-      }
+      if (image) imageUrl = await uploadToCloudinary(image);
 
       await axios.post(
         `${BACKEND_URL}/api/posts`,
@@ -49,11 +58,10 @@ const PostForm = ({ onPostCreated }) => {
         { headers: { Authorization: `Bearer ${userInfo?.token}` } }
       );
 
-      // ✅ Reset form
       setContent("");
       setImage(null);
+      setImagePreview(null);
 
-      // Refresh posts
       if (onPostCreated) onPostCreated();
     } catch (error) {
       console.error("❌ Post upload error:", error);
@@ -76,15 +84,35 @@ const PostForm = ({ onPostCreated }) => {
       </Form.Group>
 
       <Form.Group controlId="postImage" className="mt-3">
-        <Form.Control
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImage(e.target.files[0])}
-        />
+        <Form.Control type="file" accept="image/*" onChange={handleImageChange} />
       </Form.Group>
 
-      <Button variant="primary" type="submit" disabled={loading} className="mt-3">
-        {loading ? <Spinner animation="border" size="sm" /> : "Post"}
+      {imagePreview && (
+        <div className="mt-3 text-center position-relative">
+          <Image
+            src={imagePreview}
+            alt="preview"
+            thumbnail
+            style={{ maxHeight: 200, objectFit: "cover" }}
+          />
+          <Button
+            variant="danger"
+            size="sm"
+            className="position-absolute top-0 end-0"
+            onClick={handleRemoveImage}
+          >
+            Remove
+          </Button>
+        </div>
+      )}
+
+      <Button
+        variant="primary"
+        type="submit"
+        disabled={loading}
+        className="mt-3 w-100"
+      >
+        {loading ? <Loader small /> : "Post"}
       </Button>
     </Form>
   );

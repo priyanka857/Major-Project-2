@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
+import Loader from "../components/Loader";
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE;
 
@@ -13,9 +14,7 @@ const UserPosts = ({ userId }) => {
 
   const getImageUrl = (path) => {
     if (!path) return "/default.png";
-    return path.startsWith("http")
-      ? path
-      : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
+    return path.startsWith("http") ? path : `${BACKEND_URL}${path}`;
   };
 
   const fetchUserPosts = async () => {
@@ -25,32 +24,34 @@ const UserPosts = ({ userId }) => {
         headers: { Authorization: `Bearer ${userInfo?.token}` },
       });
       setPosts(data);
+      setError("");
     } catch (err) {
-      console.error("Error fetching user posts:", err);
-      setError("Failed to load posts");
+      console.error(err);
+      setError("Failed to load posts.");
     } finally {
       setLoading(false);
     }
   };
 
   const deletePost = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+
     try {
       await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
         headers: { Authorization: `Bearer ${userInfo?.token}` },
       });
       setPosts(posts.filter((post) => post._id !== postId));
     } catch (err) {
-      console.error("Error deleting post:", err);
+      console.error(err);
       alert("Failed to delete post.");
     }
   };
 
   useEffect(() => {
     if (userId) fetchUserPosts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  if (loading) return <Spinner animation="border" />;
+  if (loading) return <Loader />;
   if (error) return <p className="text-danger">{error}</p>;
 
   return (
@@ -86,30 +87,29 @@ const UserPosts = ({ userId }) => {
               {post.comments?.length > 0 && (
                 <div className="mt-3">
                   <h6>Comments:</h6>
-                  {post.comments.map((comment, index) => (
-                    <div key={index} className="d-flex align-items-center mb-1">
+                  {post.comments.map((c, idx) => (
+                    <div key={idx} className="d-flex align-items-center mb-1">
                       <img
-                        src={getImageUrl(comment.user?.profilePicture)}
+                        src={getImageUrl(c.user?.profilePicture)}
                         alt="profile"
                         width={30}
                         height={30}
                         className="rounded-circle me-2"
                       />
-                      <strong>@{comment.user?.username}:</strong>&nbsp;
-                      {comment.text}
+                      <strong>@{c.user?.username}:</strong> {c.text}
                     </div>
                   ))}
                 </div>
               )}
 
-              {post.user?._id?.toString() === userInfo?._id?.toString() && (
+              {post.user?._id === userInfo?._id && (
                 <Button
-                  variant="danger"
+                  variant="outline-danger"
                   size="sm"
-                  className="mt-2"
                   onClick={() => deletePost(post._id)}
+                  className="mt-2"
                 >
-                  Delete
+                  <i className="fas fa-trash" /> Delete
                 </Button>
               )}
             </Card.Body>

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Card, Form, Button, Image } from "react-bootstrap";
-import { FaTrash } from "react-icons/fa";
 import axios from "axios";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
@@ -25,9 +24,9 @@ const PostList = () => {
       });
       setPosts(data.reverse());
       setError(null);
-    } catch (error) {
+    } catch (err) {
       setError("Failed to load posts.");
-      console.error("Fetch posts error:", error);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -48,46 +47,38 @@ const PostList = () => {
       );
       setComment((prev) => ({ ...prev, [postId]: "" }));
       setRefreshToggle((prev) => !prev);
-    } catch (error) {
-      console.error("Comment error:", error);
+    } catch (err) {
+      console.error(err);
       setError("Failed to add comment.");
     }
   };
 
   const handleDeletePost = async (postId) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      try {
-        await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
-          headers: { Authorization: `Bearer ${userInfo.token}` },
-        });
-        setSuccess("Post deleted successfully.");
-        setRefreshToggle((prev) => !prev);
-        setTimeout(() => setSuccess(null), 3000);
-      } catch (error) {
-        console.error("Delete error:", error);
-        setError("Failed to delete post.");
-        setTimeout(() => setError(null), 3000);
-      }
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
+        headers: { Authorization: `Bearer ${userInfo.token}` },
+      });
+      setSuccess("Post deleted successfully.");
+      setRefreshToggle((prev) => !prev);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete post.");
+      setTimeout(() => setError(null), 3000);
     }
   };
 
   const getImageUrl = (path) => {
-    if (!path) return "/uploads/default.jpg";
+    if (!path) return "/default.png";
     return path.startsWith("http") ? path : `${BACKEND_URL}${path}`;
   };
 
   return (
     <>
-      {error && (
-        <Message variant="danger" onClose={() => setError(null)} dismissible>
-          {error}
-        </Message>
-      )}
-      {success && (
-        <Message variant="success" onClose={() => setSuccess(null)} dismissible>
-          {success}
-        </Message>
-      )}
+      {error && <Message variant="danger">{error}</Message>}
+      {success && <Message variant="success">{success}</Message>}
 
       {loading ? (
         <Loader />
@@ -110,14 +101,14 @@ const PostList = () => {
                   <strong>@{post.user?.username}</strong>
                 </div>
 
-                {/* ✅ Trash icon delete option */}
-                {post.user?._id?.toString() === userInfo?._id?.toString() && (
+                {/* ✅ Trash icon delete */}
+                {post.user?._id === userInfo?._id && (
                   <Button
-                    variant="link"
-                    className="text-danger p-0"
+                    variant="outline-danger"
+                    size="sm"
                     onClick={() => handleDeletePost(post._id)}
                   >
-                    <FaTrash />
+                    <i className="fas fa-trash" />
                   </Button>
                 )}
               </div>
@@ -133,17 +124,13 @@ const PostList = () => {
                 />
               )}
 
-              {/* Comment box */}
               <Form.Group className="d-flex gap-2 mt-3">
                 <Form.Control
                   type="text"
                   placeholder="Write a comment..."
                   value={comment[post._id] || ""}
                   onChange={(e) =>
-                    setComment((prev) => ({
-                      ...prev,
-                      [post._id]: e.target.value,
-                    }))
+                    setComment((prev) => ({ ...prev, [post._id]: e.target.value }))
                   }
                 />
                 <Button
@@ -155,7 +142,6 @@ const PostList = () => {
                 </Button>
               </Form.Group>
 
-              {/* Show comments */}
               {post.comments?.length > 0 && (
                 <div className="mt-3">
                   {post.comments.map((c, idx) => (
@@ -172,8 +158,7 @@ const PostList = () => {
                         style={{ objectFit: "cover" }}
                       />
                       <div>
-                        <strong>@{c.user?.username || c.username}</strong>:{" "}
-                        {c.text}
+                        <strong>@{c.user?.username || c.username}</strong>: {c.text}
                       </div>
                     </div>
                   ))}
