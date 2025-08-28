@@ -18,7 +18,7 @@ const BACKEND_URL = process.env.REACT_APP_API_BASE || "https://socialmedia-backe
 
 // ✅ Helper: works for both Cloudinary & local backend images
 const getImageUrl = (path) => {
-  if (!path) return "/default.png";
+  if (!path) return "https://via.placeholder.com/150?text=No+Image"; 
   return path.startsWith("http")
     ? path
     : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
