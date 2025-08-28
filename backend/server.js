@@ -8,6 +8,7 @@ const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const chatRoutes = require("./routes/chatRoutes");
 const postRoutes = require("./routes/postRoutes");
+const authRoutes = require("./routes/authRoutes");
 const Chat = require("./models/Chat");
 dotenv.config();
 const app = express();
@@ -32,6 +33,7 @@ app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 // API Routes
 app.use("/api/chats", chatRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/auth", authRoutes);
 
 // ✅ Default route to avoid "Cannot GET /"
 app.get("/", (req, res) => {

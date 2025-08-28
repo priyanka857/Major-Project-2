@@ -26,6 +26,7 @@ const getImageUrl = (path) => {
 const Home = () => {
   const navigate = useNavigate(); // Initialize navigate
   const [posts, setPosts] = useState([]);
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [commentTexts, setCommentTexts] = useState({});
@@ -33,7 +34,7 @@ const Home = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  
 
   // Redirect to login if not logged in
   useEffect(() => {
