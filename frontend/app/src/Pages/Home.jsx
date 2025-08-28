@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Container,
@@ -13,18 +12,19 @@ import axios from "axios";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 import PostForm from "../Posts/PostForm";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE || "https://socialmedia-backend-yfjp.onrender.com";
 
-// ✅ Helper: works for both Cloudinary & local backend images
 const getImageUrl = (path) => {
-  if (!path) return "https://via.placeholder.com/150?text=No+Image"; 
+  if (!path) return "/default.png";
   return path.startsWith("http")
     ? path
     : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
 };
 
 const Home = () => {
+  const navigate = useNavigate(); // Initialize navigate
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,6 +34,13 @@ const Home = () => {
   const [selectedPostId, setSelectedPostId] = useState(null);
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+  // Redirect to login if not logged in
+  useEffect(() => {
+    if (!userInfo) {
+      navigate("/login");
+    }
+  }, [userInfo, navigate]);
 
   const config = useMemo(
     () => ({
