@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Button, Spinner } from "react-bootstrap";
+import { Card, Button } from "react-bootstrap";
 import axios from "axios";
 import Loader from "../components/Loader";
 
@@ -14,19 +14,21 @@ const UserPosts = ({ userId }) => {
 
   const getImageUrl = (path) => {
     if (!path) return "/default.png";
-    return path.startsWith("http") ? path : `${BACKEND_URL}${path}`;
+    // If URL starts with http, use as is; otherwise, prepend BACKEND_URL with slash
+    return path.startsWith("http") ? path : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
   };
 
   const fetchUserPosts = async () => {
+    if (!userInfo?.token) return;
     try {
       setLoading(true);
       const { data } = await axios.get(`${BACKEND_URL}/api/posts/user/${userId}`, {
-        headers: { Authorization: `Bearer ${userInfo?.token}` },
+        headers: { Authorization: `Bearer ${userInfo.token}` },
       });
       setPosts(data);
       setError("");
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       setError("Failed to load posts.");
     } finally {
       setLoading(false);
@@ -35,14 +37,13 @@ const UserPosts = ({ userId }) => {
 
   const deletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
-
     try {
       await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${userInfo?.token}` },
+        headers: { Authorization: `Bearer ${userInfo.token}` },
       });
-      setPosts(posts.filter((post) => post._id !== postId));
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       alert("Failed to delete post.");
     }
   };
@@ -52,7 +53,7 @@ const UserPosts = ({ userId }) => {
   }, [userId]);
 
   if (loading) return <Loader />;
-  if (error) return <p className="text-danger">{error}</p>;
+  if (error) return <p className="text-danger text-center">{error}</p>;
 
   return (
     <div>
@@ -69,11 +70,12 @@ const UserPosts = ({ userId }) => {
                   className="rounded-circle me-2"
                   width={40}
                   height={40}
+                  style={{ objectFit: "cover" }}
                 />
                 <strong>@{post.user?.username}</strong>
               </div>
 
-              <Card.Text>{post.content}</Card.Text>
+              <Card.Text>{post.content || post.caption}</Card.Text>
 
               {post.image && (
                 <img
@@ -95,8 +97,9 @@ const UserPosts = ({ userId }) => {
                         width={30}
                         height={30}
                         className="rounded-circle me-2"
+                        style={{ objectFit: "cover" }}
                       />
-                      <strong>@{c.user?.username}:</strong> {c.text}
+                      <strong>@{c.user?.username || c.username}:</strong> {c.text}
                     </div>
                   ))}
                 </div>
@@ -109,7 +112,7 @@ const UserPosts = ({ userId }) => {
                   onClick={() => deletePost(post._id)}
                   className="mt-2"
                 >
-                  <i className="fas fa-trash" /> Delete
+                  <i className="fas fa-trash me-1" /> Delete
                 </Button>
               )}
             </Card.Body>

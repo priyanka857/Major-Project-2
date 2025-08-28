@@ -13,14 +13,15 @@ const PostForm = ({ onPostCreated }) => {
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
+  // Upload image to Cloudinary
   const uploadToCloudinary = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
 
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUDNAME}/image/upload`,
-      { method: "POST", body: data }
+      { method: "POST", body: formData }
     );
 
     if (!res.ok) throw new Error("Failed to upload image to Cloudinary");
@@ -62,9 +63,9 @@ const PostForm = ({ onPostCreated }) => {
       setImage(null);
       setImagePreview(null);
 
-      if (onPostCreated) onPostCreated();
+      if (onPostCreated) onPostCreated(); // Refresh posts after creation
     } catch (error) {
-      console.error("❌ Post upload error:", error);
+      console.error("❌ Post upload error:", error.response?.data || error.message);
       alert("Failed to create post. Please try again.");
     } finally {
       setLoading(false);

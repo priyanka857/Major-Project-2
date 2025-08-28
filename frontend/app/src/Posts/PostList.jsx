@@ -16,7 +16,9 @@ const PostList = () => {
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
+  // Fetch posts from backend
   const fetchPosts = async () => {
+    if (!userInfo?.token) return;
     try {
       setLoading(true);
       const { data } = await axios.get(`${BACKEND_URL}/api/posts`, {
@@ -25,8 +27,8 @@ const PostList = () => {
       setPosts(data.reverse());
       setError(null);
     } catch (err) {
+      console.error(err.response?.data || err.message);
       setError("Failed to load posts.");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -38,7 +40,6 @@ const PostList = () => {
 
   const handleComment = async (postId) => {
     if (!comment[postId]?.trim()) return;
-
     try {
       await axios.post(
         `${BACKEND_URL}/api/posts/${postId}/comments`,
@@ -48,14 +49,14 @@ const PostList = () => {
       setComment((prev) => ({ ...prev, [postId]: "" }));
       setRefreshToggle((prev) => !prev);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       setError("Failed to add comment.");
+      setTimeout(() => setError(null), 3000);
     }
   };
 
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
-
     try {
       await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
@@ -64,7 +65,7 @@ const PostList = () => {
       setRefreshToggle((prev) => !prev);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       setError("Failed to delete post.");
       setTimeout(() => setError(null), 3000);
     }
@@ -72,7 +73,7 @@ const PostList = () => {
 
   const getImageUrl = (path) => {
     if (!path) return "/default.png";
-    return path.startsWith("http") ? path : `${BACKEND_URL}${path}`;
+    return path.startsWith("http") ? path : `${BACKEND_URL}/${path}`;
   };
 
   return (
@@ -101,7 +102,6 @@ const PostList = () => {
                   <strong>@{post.user?.username}</strong>
                 </div>
 
-                {/* ✅ Trash icon delete */}
                 {post.user?._id === userInfo?._id && (
                   <Button
                     variant="outline-danger"
