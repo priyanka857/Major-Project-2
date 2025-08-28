@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -7,27 +8,52 @@ const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const chatRoutes = require("./routes/chatRoutes");
 const postRoutes = require("./routes/postRoutes");
+const Chat = require("./models/chatModel"); // 🔥 Fix: import Chat model
 
 dotenv.config();
 const app = express();
+
+// Connect MongoDB
 connectDB();
 
-app.use(cors({ origin: ['http://localhost:3000', 'https://socialmedia-frontend-jkwq.onrender.com'], credentials: true }));
+// Middlewares
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://socialmedia-frontend-jkwq.onrender.com",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+
+// API Routes
 app.use("/api/chats", chatRoutes);
 app.use("/api/posts", postRoutes);
 
+// ✅ Default route to avoid "Cannot GET /"
+app.get("/", (req, res) => {
+  res.send("🚀 API is running...");
+});
+
+// Create server
 const server = http.createServer(app);
+
+// Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:3000', 'https://socialmedia-frontend-jkwq.onrender.com'],
+    origin: [
+      "http://localhost:3000",
+      "https://socialmedia-frontend-jkwq.onrender.com",
+    ],
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-// Socket.IO
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
@@ -45,17 +71,21 @@ io.on("connection", (socket) => {
 
   // new message
   socket.on("new message", async (message) => {
-    const chat = await Chat.findById(message.chat); // Chat model import pannunga
-    if (!chat) return;
+    try {
+      const chat = await Chat.findById(message.chat).populate("users");
+      if (!chat) return;
 
-    chat.users.forEach((userId) => {
-      if (userId.toString() !== message.sender.toString()) {
-        socket.to(userId.toString()).emit("message received", message);
-      }
-    });
+      chat.users.forEach((user) => {
+        if (user._id.toString() !== message.sender.toString()) {
+          socket.to(user._id.toString()).emit("message received", message);
+        }
+      });
+    } catch (err) {
+      console.error("Socket message error:", err.message);
+    }
   });
 
-  // typing
+  // typing events
   socket.on("typing", ({ chatId, user }) => {
     socket.to(chatId).emit("typing", user);
   });
@@ -69,5 +99,8 @@ io.on("connection", (socket) => {
   });
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
+server.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
