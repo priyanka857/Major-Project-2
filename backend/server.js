@@ -8,7 +8,7 @@ const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const chatRoutes = require("./routes/chatRoutes");
 const postRoutes = require("./routes/postRoutes");
-const Chat = require("./models/chatModel"); // 🔥 Fix: import Chat model
+const Chat = require("./models/chat"); // 🔥 Fix: import Chat model
 
 dotenv.config();
 const app = express();
