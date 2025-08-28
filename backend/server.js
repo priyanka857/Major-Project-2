@@ -6,6 +6,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const chatRoutes = require("./routes/chatRoutes");
+const postRoutes = require("./routes/postRoutes");
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use(cors({ origin: ['http://localhost:3000', 'https://socialmedia-frontend-j
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use("/api/chats", chatRoutes);
+app.use("/api/posts", postRoutes);
 
 const server = http.createServer(app);
 const io = new Server(server, {
