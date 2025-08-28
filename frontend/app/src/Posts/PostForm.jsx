@@ -15,19 +15,20 @@ const PostForm = ({ onPostCreated }) => {
   const uploadToCloudinary = async (file) => {
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", "YOUR_UPLOAD_PRESET"); // replace with your Cloudinary preset
-    data.append("cloud_name", "YOUR_CLOUD_NAME"); // replace with your Cloudinary cloud name
+    data.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload`,
+      `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUDNAME}/image/upload`,
       {
         method: "POST",
         body: data,
       }
     );
 
+    if (!res.ok) throw new Error("Failed to upload image to Cloudinary");
+
     const result = await res.json();
-    return result.secure_url; // return Cloudinary image URL
+    return result.secure_url; // ✅ Cloudinary image URL
   };
 
   const handleSubmit = async (e) => {
@@ -39,20 +40,24 @@ const PostForm = ({ onPostCreated }) => {
 
       let imageUrl = "";
       if (image) {
-        imageUrl = await uploadToCloudinary(image); // upload to cloudinary
+        imageUrl = await uploadToCloudinary(image);
       }
 
       await axios.post(
         `${BACKEND_URL}/api/posts`,
-        { content, image: imageUrl }, // send only URL to backend
+        { content, image: imageUrl },
         { headers: { Authorization: `Bearer ${userInfo?.token}` } }
       );
 
+      // ✅ Reset form
       setContent("");
       setImage(null);
-      if (onPostCreated) onPostCreated(); // refresh posts
+
+      // Refresh posts
+      if (onPostCreated) onPostCreated();
     } catch (error) {
-      console.error("Post upload error:", error);
+      console.error("❌ Post upload error:", error);
+      alert("Failed to create post. Please try again.");
     } finally {
       setLoading(false);
     }

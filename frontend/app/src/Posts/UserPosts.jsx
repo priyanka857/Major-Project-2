@@ -11,7 +11,6 @@ const UserPosts = ({ userId }) => {
 
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-  // ✅ Helper: works for Cloudinary & local images
   const getImageUrl = (path) => {
     if (!path) return "/default.png";
     return path.startsWith("http")
@@ -19,7 +18,6 @@ const UserPosts = ({ userId }) => {
       : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
   };
 
-  // ✅ Fetch user posts
   const fetchUserPosts = async () => {
     try {
       setLoading(true);
@@ -35,7 +33,6 @@ const UserPosts = ({ userId }) => {
     }
   };
 
-  // ✅ Delete post
   const deletePost = async (postId) => {
     try {
       await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
@@ -64,7 +61,6 @@ const UserPosts = ({ userId }) => {
         posts.map((post) => (
           <Card key={post._id} className="mb-3 shadow-sm">
             <Card.Body>
-              {/* ✅ User info */}
               <div className="d-flex align-items-center mb-2">
                 <img
                   src={getImageUrl(post.user?.profilePicture)}
@@ -76,10 +72,8 @@ const UserPosts = ({ userId }) => {
                 <strong>@{post.user?.username}</strong>
               </div>
 
-              {/* ✅ Post content */}
               <Card.Text>{post.content}</Card.Text>
 
-              {/* ✅ Post image */}
               {post.image && (
                 <img
                   src={getImageUrl(post.image)}
@@ -89,7 +83,6 @@ const UserPosts = ({ userId }) => {
                 />
               )}
 
-              {/* ✅ Comments */}
               {post.comments?.length > 0 && (
                 <div className="mt-3">
                   <h6>Comments:</h6>
@@ -109,7 +102,6 @@ const UserPosts = ({ userId }) => {
                 </div>
               )}
 
-              {/* ✅ Delete button (only for owner) */}
               {post.user?._id?.toString() === userInfo?._id?.toString() && (
                 <Button
                   variant="danger"

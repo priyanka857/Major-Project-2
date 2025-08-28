@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Form, Button, Image } from "react-bootstrap";
+import { FaTrash } from "react-icons/fa";
 import axios from "axios";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
@@ -43,9 +44,7 @@ const PostList = () => {
       await axios.post(
         `${BACKEND_URL}/api/posts/${postId}/comments`,
         { text: comment[postId] },
-        {
-          headers: { Authorization: `Bearer ${userInfo.token}` },
-        }
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
       );
       setComment((prev) => ({ ...prev, [postId]: "" }));
       setRefreshToggle((prev) => !prev);
@@ -72,7 +71,6 @@ const PostList = () => {
     }
   };
 
-  // ✅ Helper function to resolve image URLs
   const getImageUrl = (path) => {
     if (!path) return "/uploads/default.jpg";
     return path.startsWith("http") ? path : `${BACKEND_URL}${path}`;
@@ -111,13 +109,15 @@ const PostList = () => {
                   />
                   <strong>@{post.user?.username}</strong>
                 </div>
+
+                {/* ✅ Trash icon delete option */}
                 {post.user?._id?.toString() === userInfo?._id?.toString() && (
                   <Button
-                    variant="outline-danger"
-                    size="sm"
+                    variant="link"
+                    className="text-danger p-0"
                     onClick={() => handleDeletePost(post._id)}
                   >
-                    Delete
+                    <FaTrash />
                   </Button>
                 )}
               </div>
@@ -133,6 +133,7 @@ const PostList = () => {
                 />
               )}
 
+              {/* Comment box */}
               <Form.Group className="d-flex gap-2 mt-3">
                 <Form.Control
                   type="text"
@@ -154,6 +155,7 @@ const PostList = () => {
                 </Button>
               </Form.Group>
 
+              {/* Show comments */}
               {post.comments?.length > 0 && (
                 <div className="mt-3">
                   {post.comments.map((c, idx) => (
