@@ -9,6 +9,8 @@ const connectDB = require("./config/db");
 const chatRoutes = require("./routes/chatRoutes");
 const postRoutes = require("./routes/postRoutes");
 const authRoutes = require("./routes/authRoutes");
+const authRoutes = require("./routes/userRoutes");
+
 const Chat = require("./models/Chat");
 dotenv.config();
 const app = express();
