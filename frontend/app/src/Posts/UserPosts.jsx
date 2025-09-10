@@ -5,7 +5,7 @@ import Loader from "../components/Loader";
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE;
 
-const UserPosts = ({ userId }) => {
+const UserPosts = ({ userId, showActions = true }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -14,42 +14,42 @@ const UserPosts = ({ userId }) => {
 
   const getImageUrl = (path) => {
     if (!path) return "/default.png";
-    // If URL starts with http, use as is; otherwise, prepend BACKEND_URL with slash
-    return path.startsWith("http") ? path : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
+    return path.startsWith("http")
+      ? path
+      : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
   };
 
- const fetchUserPosts = async () => {
-  if (!userInfo?.token) return;
-  try {
-    setLoading(true);
+  const fetchUserPosts = async () => {
+    if (!userInfo?.token) return;
 
-    // Use /mine if userId not provided (for profile page)
-    const url = userId
-      ? `${BACKEND_URL}/api/posts/user/${userId}`
-      : `${BACKEND_URL}/api/posts/mine`;
+    try {
+      setLoading(true);
+      const url = userId
+        ? `${BACKEND_URL}/api/posts/user/${userId}`
+        : `${BACKEND_URL}/api/posts/mine`;
 
-    const { data } = await axios.get(url, {
-      headers: { Authorization: `Bearer ${userInfo.token}` },
-    });
+      const { data } = await axios.get(url, {
+        headers: { Authorization: `Bearer ${userInfo.token}` },
+      });
 
-    setPosts(data);
-    setError("");
-  } catch (err) {
-    console.error(err.response?.data || err.message);
-    setError("Failed to load posts.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setPosts(data);
+      setError("");
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setError("Failed to load posts.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const deletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
+
     try {
       await axios.delete(`${BACKEND_URL}/api/posts/${postId}`, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       });
-      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+      setPosts((prev) => prev.filter((post) => post._id !== postId));
     } catch (err) {
       console.error(err.response?.data || err.message);
       alert("Failed to delete post.");
@@ -57,7 +57,7 @@ const UserPosts = ({ userId }) => {
   };
 
   useEffect(() => {
-    if (userId) fetchUserPosts();
+    fetchUserPosts();
   }, [userId]);
 
   if (loading) return <Loader />;
@@ -83,7 +83,7 @@ const UserPosts = ({ userId }) => {
                 <strong>@{post.user?.username}</strong>
               </div>
 
-              <Card.Text>{post.content || post.caption}</Card.Text>
+              <Card.Text>{post.caption}</Card.Text>
 
               {post.image && (
                 <img
@@ -107,13 +107,14 @@ const UserPosts = ({ userId }) => {
                         className="rounded-circle me-2"
                         style={{ objectFit: "cover" }}
                       />
-                      <strong>@{c.user?.username || c.username}:</strong> {c.text}
+                      <strong>@{c.user?.username || c.username}:</strong>{" "}
+                      {c.text}
                     </div>
                   ))}
                 </div>
               )}
 
-              {post.user?._id === userInfo?._id && (
+              {showActions && post.user?._id === userInfo?._id && (
                 <Button
                   variant="outline-danger"
                   size="sm"
