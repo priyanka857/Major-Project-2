@@ -518,7 +518,7 @@ function Profile() {
   <Col>
     <h5 className="mb-3">Posts</h5>
     {user ? (
-      <UserPosts userId={user._id} showActions={false} />
+      <UserPosts  showActions={false} />
     ) : (
       <p className="text-muted text-center">Loading posts...</p>
     )}

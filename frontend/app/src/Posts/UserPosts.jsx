@@ -18,22 +18,30 @@ const UserPosts = ({ userId }) => {
     return path.startsWith("http") ? path : `${BACKEND_URL}/${path.replace(/^\/+/, "")}`;
   };
 
-  const fetchUserPosts = async () => {
-    if (!userInfo?.token) return;
-    try {
-      setLoading(true);
-      const { data } = await axios.get(`${BACKEND_URL}/api/posts/user/${userId}`, {
-        headers: { Authorization: `Bearer ${userInfo.token}` },
-      });
-      setPosts(data);
-      setError("");
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      setError("Failed to load posts.");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchUserPosts = async () => {
+  if (!userInfo?.token) return;
+  try {
+    setLoading(true);
+
+    // Use /mine if userId not provided (for profile page)
+    const url = userId
+      ? `${BACKEND_URL}/api/posts/user/${userId}`
+      : `${BACKEND_URL}/api/posts/mine`;
+
+    const { data } = await axios.get(url, {
+      headers: { Authorization: `Bearer ${userInfo.token}` },
+    });
+
+    setPosts(data);
+    setError("");
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    setError("Failed to load posts.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const deletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
