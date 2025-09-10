@@ -514,12 +514,17 @@ function Profile() {
         </Col>
       </Row>
       {/* Posts Grid */}
-      <Row className="px-5">
-        <Col>
-          <h5 className="mb-3">Posts</h5>
-          <UserPosts userId={user._id} showActions={false} />
-        </Col>
-      </Row>
+<Row className="px-5">
+  <Col>
+    <h5 className="mb-3">Posts</h5>
+    {user ? (
+      <UserPosts userId={user._id} showActions={false} />
+    ) : (
+      <p className="text-muted text-center">Loading posts...</p>
+    )}
+  </Col>
+</Row>
+
     </Container>
   );
 }

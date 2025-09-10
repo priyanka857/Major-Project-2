@@ -100,11 +100,24 @@ const getPostById = async (req, res) => {
 // @desc    Get all posts by a specific user
 // @route   GET /api/posts/user/:userId
 // @access  Private
+// Get logged-in user's posts (profile page)
+const getMyPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .populate("user", "username profilePicture");
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error("Get my posts error:", error);
+    res.status(500).json({ message: "Failed to fetch my posts" });
+  }
+};
+
+// Get posts by userId (other user's profile)
 const getUserPosts = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user._id;
-
-    const posts = await Post.find({ user: userId })
+    const posts = await Post.find({ user: req.params.userId })
       .sort({ createdAt: -1 })
       .populate("user", "username profilePicture");
 
@@ -114,6 +127,7 @@ const getUserPosts = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch user's posts" });
   }
 };
+
 
 // @desc    Delete a post
 // @route   DELETE /api/posts/:postId
@@ -143,6 +157,7 @@ const deletePost = async (req, res) => {
 module.exports = {
   createPost,
   getAllPosts,
+  getMyPosts,
   addComment,
   getPostById,
   getUserPosts,

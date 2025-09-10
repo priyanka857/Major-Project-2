@@ -8,6 +8,7 @@ const {
   addComment,
   getPostById,
   getUserPosts,
+  getMyPosts,
   deletePost,
 } = require("../controller/postController");
 const { protect } = require("../middleware/authMiddleware");
@@ -18,7 +19,7 @@ router.get("/", protect, getAllPosts);
 // More specific route first
 router.get("/user/:userId", protect, getUserPosts);
 
-router.get("/mine", protect, getUserPosts);
+router.get("/mine", protect, getMyPosts);
 
 
 // More general route last
